@@ -1,5 +1,4 @@
 ﻿FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-USER appuser
 WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
@@ -10,7 +9,6 @@ WORKDIR /src
 COPY ["HrApp.csproj", "./"]
 RUN dotnet restore "HrApp.csproj"
 COPY . .
-WORKDIR "/src/"
 RUN dotnet build "HrApp.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
@@ -20,4 +18,8 @@ RUN dotnet publish "HrApp.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:Use
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
+RUN useradd -ms /bin/bash appuser
+USER appuser
+
 ENTRYPOINT ["dotnet", "HrApp.dll"]
